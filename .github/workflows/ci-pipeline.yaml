@@ -55,11 +55,13 @@ jobs:
           curl -L https://github.com/equinix-labs/otel-cli/releases/latest/download/otel-cli-linux-amd64 -o otel-cli
           ls -l otel-cli
           chmod +x otel-cli
-          sudo mv otel-cli /usr/local/bin/
+          sudo mv otel-cli /usr/local/bin/          
 
       - name: Verify otel-cli installation
         run: |
           ls -l /usr/local/bin/otel-cli
+          cat /usr/local/bin/otel-cli
+          file /usr/local/bin/otel-cli
           otel-cli --version
             
       - name: Send Test Trace

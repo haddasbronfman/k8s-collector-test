@@ -1,0 +1,17 @@
+name: CI Pipeline for Kubernetes + OpenTelemetry + LocalStack
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main 
+
+jobs:
+  test-deployment:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: my-step
+        run: echo "Hello orld"

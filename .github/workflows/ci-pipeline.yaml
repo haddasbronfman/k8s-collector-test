@@ -37,9 +37,6 @@ jobs:
 
       - name: Port-Forward LocalStack
         run: kubectl port-forward -n observability svc/localstack 4566:4566 &
-      
-      # - name: Install AWS CLI
-      #   run: sudo apt-get install -y awscli
 
       - name: Verify LocalStack
         run: aws --endpoint-url=http://localhost:4566 s3 ls
@@ -49,3 +46,15 @@ jobs:
 
       - name: Verify S3 Bucket
         run: aws --endpoint-url=http://localhost:4566 s3 ls
+
+      - name: Port-Forward OpenTelemetry Collector
+        run: kubectl port-forward -n observability svc/otel-collector 4317:4317 &
+      
+      - name: Install otel-cli
+        run: curl -L https://github.com/equinix-labs/otel-cli/releases/latest/download/otel-cli-linux-amd64 -o otel-cli && chmod +x otel-cli && sudo mv otel-cli /usr/local/bin/
+
+      - name: Send Test Trace
+        run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose
+
+      - name: Verify Trace in S3
+        run: aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive

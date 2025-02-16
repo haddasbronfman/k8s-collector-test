@@ -13,5 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: my-step
-        run: echo "Hello orld"
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Kubernetes with Kind
+        uses: helm/kind-action@v1.8.0
+        with:
+          cluster_name: "ci-cluster"
+
+      - name: Apply Kubernetes Deployment
+        run: |
+          kubectl apply -f poc-deployment.yaml
+          sleep 10 
+
+      - name: Verify Kubernetes Pods
+        run: kubectl get pods -n observability

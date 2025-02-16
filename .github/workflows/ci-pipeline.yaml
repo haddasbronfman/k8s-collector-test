@@ -51,11 +51,11 @@ jobs:
         run: kubectl port-forward -n observability svc/otel-collector 4317:4317 &
 
       - name: Install otel-cli
-        run: |
-          curl -L https://github.com/equinix-labs/otel-cli/releases/latest/download/otel-cli-linux-amd64 -o otel-cli
-          ls -l otel-cli
+        run: |          
+          curl -L -o otel-cli.tar.gz https://github.com/equinix-labs/otel-cli/releases/download/v0.4.5/otel-cli_0.4.5_linux_amd64.tar.gz
+          tar -xzf otel-cli.tar.gz
           chmod +x otel-cli
-          sudo mv otel-cli /usr/local/bin/          
+          sudo mv otel-cli /usr/local/bin/
 
       - name: Verify otel-cli installation
         run: |

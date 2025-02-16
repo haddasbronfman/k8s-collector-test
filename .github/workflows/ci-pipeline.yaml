@@ -58,11 +58,7 @@ jobs:
           sudo mv otel-cli /usr/local/bin/
 
       - name: Verify otel-cli installation
-        run: |
-          ls -l /usr/local/bin/otel-cli
-          cat /usr/local/bin/otel-cli
-          file /usr/local/bin/otel-cli
-          otel-cli --version
+        run: otel-cli --version
             
       - name: Send Test Trace
         run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose

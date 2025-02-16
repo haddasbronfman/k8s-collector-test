@@ -152,3 +152,4 @@ kubectl get pods -n observability
 ```
 
 add test1 to readme
+add test2 to readme

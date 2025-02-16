@@ -62,7 +62,7 @@ jobs:
 
       - name: Get latest trace file
         run: |
-          FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces/otel-collector/traces/ --recursive | sort | tail -n 1 | awk '{print $4}')
+          FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive | sort | tail -n 1 | awk '{print $4}')
           echo "Latest trace file: $FILE_NAME"
           aws --endpoint-url=http://localhost:4566 s3 cp s3://$FILE_NAME - | jq
 

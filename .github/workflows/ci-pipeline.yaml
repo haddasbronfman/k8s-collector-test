@@ -62,9 +62,14 @@ jobs:
 
       - name: Get latest trace file
         run: |
+          aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive
+          echo "hi1"
           FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive | sort | tail -n 1 | awk '{print $4}')
+          echo "hi2"
           echo "Latest trace file: $FILE_NAME"
+          echo "hi3"
           aws --endpoint-url=http://localhost:4566 s3 cp s3://$FILE_NAME - | jq
+          echo "hi4"
 
       # - name: Verify "test-span" in Trace File
       #   run: |

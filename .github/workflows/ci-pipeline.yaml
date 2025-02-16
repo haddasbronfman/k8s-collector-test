@@ -28,3 +28,18 @@ jobs:
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -n observability
+
+      - name: Port-Forward LocalStack
+        run: kubectl port-forward -n observability svc/localstack 4566:4566 &
+      
+      - name: Install AWS CLI
+        run: sudo apt-get install -y awscli
+
+      - name: Verify LocalStack
+        run: aws --endpoint-url=http://localhost:4566 s3 ls
+
+      - name: Create S3 Bucket
+        run: aws --endpoint-url=http://localhost:4566 s3 mb s3://otel-traces
+
+      - name: Verify S3 Bucket
+        run: aws --endpoint-url=http://localhost:4566 s3 ls

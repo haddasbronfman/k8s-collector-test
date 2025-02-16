@@ -23,7 +23,7 @@ jobs:
 
       - name: Apply Kubernetes Deployment
         run: |
-          kubectl apply -f poc-deployment.yaml
+          kubectl apply -f kubernetes-poc/poc-deployment.yaml
           sleep 10 
 
       - name: Verify Kubernetes Pods

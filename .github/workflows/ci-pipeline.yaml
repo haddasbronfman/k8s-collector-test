@@ -57,8 +57,8 @@ jobs:
           chmod +x otel-cli
           sudo mv otel-cli /usr/local/bin/
 
-      - name: Verify otel-cli installation
-        run: otel-cli --version
+      # - name: Verify otel-cli installation
+      #   run: otel-cli --version
             
       - name: Send Test Trace
         run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose

@@ -50,12 +50,12 @@ jobs:
       - name: Port-Forward OpenTelemetry Collector
         run: kubectl port-forward -n observability svc/otel-collector 4317:4317 &
 
-      - name: check otel-cli
-        run: ls -l /usr/local/bin/otel-cli
-            
       - name: Install otel-cli
         run: curl -L https://github.com/equinix-labs/otel-cli/releases/latest/download/otel-cli-linux-amd64 -o otel-cli && chmod +x otel-cli && sudo mv otel-cli /usr/local/bin/
 
+      - name: check otel-cli
+        run: ls -l /usr/local/bin/otel-cli
+            
       - name: Send Test Trace
         run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose
 

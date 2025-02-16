@@ -69,8 +69,8 @@ jobs:
           echo "Latest trace file: $FILE_NAME"
           echo "hi3"
           FULL_PATH="s3://otel-traces/$FILE_NAME"
-          echo "Latest trace file: $FULL_PATH"
-          aws --endpoint-url=http://localhost:4566 s3 cp "FULL_PATH" - | jq
+          echo "Latest full path: $FULL_PATH"
+          aws --endpoint-url=http://localhost:4566 s3 cp FULL_PATH - | jq
           echo "hi4"
 
       # - name: Verify "test-span" in Trace File

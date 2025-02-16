@@ -61,17 +61,23 @@ jobs:
         run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose
 
       - name: Get latest trace file
-        run: |
-          aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive
-          echo "hi1"
+        run: |          
           FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive | sort | tail -n 1 | awk '{print $4}')
-          echo "hi2"
           echo "Latest trace file: $FILE_NAME"
-          echo "hi3"
+          
           FULL_PATH="s3://otel-traces/$FILE_NAME"
           echo "Latest full path: $FULL_PATH"
-          aws --endpoint-url=http://localhost:4566 s3 cp "$FULL_PATH" - | jq
-          echo "hi4"
+          
+          aws --endpoint-url=http://localhost:4566 s3 cp "$FULL_PATH" - | jq | tee trace.json
+          if grep -q "test-span" trace.json; then
+            echo "✅ 'test-span' was found in the trace file!"
+          else
+            echo "❌ 'test-span' was NOT found in the trace file!"
+            exit 1 
+          fi
+          
+          
+      # aws --endpoint-url=http://localhost:4566 s3 cp "$FULL_PATH" - | jq
 
       # - name: Verify "test-span" in Trace File
       #   run: |

@@ -56,12 +56,23 @@ jobs:
           tar -xzf otel-cli.tar.gz
           chmod +x otel-cli
           sudo mv otel-cli /usr/local/bin/
-
-      # - name: Verify otel-cli installation
-      #   run: otel-cli --version
             
       - name: Send Test Trace
         run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose
 
-      - name: Verify Trace in S3
-        run: aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive
+      - name: Get latest trace file
+        run: |
+          FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces/otel-collector/traces/ --recursive | sort | tail -n 1 | awk '{print $4}')
+          echo "Latest trace file: $FILE_NAME"
+          aws --endpoint-url=http://localhost:4566 s3 cp s3://$FILE_NAME trace.json
+
+      - name: Verify "test-span" in Trace File
+        run: |
+          if grep -q "test-span" trace.json; then
+            echo "✅ 'test-span' found in trace file!"
+          else
+            echo "❌ 'test-span' NOT found in trace file!" 
+            exit 1
+          fi
+
+      

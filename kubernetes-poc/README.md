@@ -150,3 +150,5 @@ kubectl get svc -n observability
 ```bash
 kubectl get pods -n observability
 ```
+
+add test1 to readme

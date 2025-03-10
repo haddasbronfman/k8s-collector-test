@@ -31,10 +31,14 @@ jobs:
         run: |
           helm dependency update ./helm
 
+      - name: Install APISIX CRDs
+        run: |
+          kubectl apply -f https://github.com/apache/apisix-ingress-controller/releases/download/v1.8.0/apisix-ingress-controller-crds.yaml
+          sleep 10
+
       - name: Deploy API Gateway (APISIX)
         run: |
-          helm upgrade --install apisix-gateway ./helm -n apisix --create-namespace
-          sleep 40
+          helm upgrade --install apisix-gateway ./helm -n apisix --create-namespace --wait
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -n apisix

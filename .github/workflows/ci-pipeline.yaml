@@ -34,7 +34,7 @@ jobs:
 
       - name: Deploy API Gateway (APISIX)
         run: |
-          helm upgrade --install apisix-gateway ./helm -n apisix --create-namespace --wait
+          helm upgrade --install apisix ./helm -n apisix --create-namespace
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -n apisix

@@ -30,10 +30,6 @@ jobs:
       - name: Update Helm Dependencies
         run: |
           helm dependency update ./helm
-
-      - name: Install APISIX CRDs
-        run: |
-          kubectl apply -f https://github.com/apache/apisix-ingress-controller/releases/download/v1.8.0/apisix-ingress-controller-crds.yaml
           sleep 10
 
       - name: Deploy API Gateway (APISIX)

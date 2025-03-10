@@ -1,4 +1,4 @@
-name: CI Pipeline for Kubernetes + OpenTelemetry + LocalStack
+name: CI Pipeline for API Gateway
 
 on:
   pull_request:
@@ -9,83 +9,39 @@ on:
       - main 
 
 jobs:
-  test-deployment:
+  deploy-gateway:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
-      AWS_DEFAULT_REGION: us-east-1
-
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set Up Kubernetes with Kind
-        uses: helm/kind-action@v1.8.0
-        with:
-          cluster_name: "ci-cluster"
-
-      - name: Apply Kubernetes Deployment
         run: |
-          kubectl apply -f kubernetes-poc/poc-deployment.yaml
-          sleep 10 
+          curl -Lo kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/
+          kind create cluster --name ci-cluster
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Update Helm Dependencies
+        run: |
+          helm dependency update ./helm
+
+      - name: Deploy API Gateway (APISIX)
+        run: |
+          helm upgrade --install apisix-gateway ./helm -n apisix --create-namespace
+          sleep 40
 
       - name: Verify Kubernetes Pods
-        run: kubectl get pods -n observability
+        run: kubectl get pods -n apisix
 
-      - name: Port-Forward LocalStack
-        run: kubectl port-forward -n observability svc/localstack 4566:4566 &
+      - name: Port-Forward API Gateway
+        run: kubectl port-forward -n apisix svc/apisix-gateway 9080:80 &
 
-      - name: Verify LocalStack
-        run: aws --endpoint-url=http://localhost:4566 s3 ls
-
-      - name: Create S3 Bucket
-        run: aws --endpoint-url=http://localhost:4566 s3 mb s3://otel-traces
-
-      - name: Verify S3 Bucket
-        run: aws --endpoint-url=http://localhost:4566 s3 ls
-
-      - name: Port-Forward OpenTelemetry Collector
-        run: kubectl port-forward -n observability svc/otel-collector 4317:4317 &
-
-      - name: Install otel-cli
-        run: |          
-          curl -L -o otel-cli.tar.gz https://github.com/equinix-labs/otel-cli/releases/download/v0.4.5/otel-cli_0.4.5_linux_amd64.tar.gz
-          tar -xzf otel-cli.tar.gz
-          chmod +x otel-cli
-          sudo mv otel-cli /usr/local/bin/
-            
-      - name: Send Test Trace
-        run: otel-cli span --name "test-span" --endpoint http://localhost:4317 --protocol grpc --verbose
-
-      - name: Get latest trace file
-        run: |          
-          FILE_NAME=$(aws --endpoint-url=http://localhost:4566 s3 ls s3://otel-traces --recursive | sort | tail -n 1 | awk '{print $4}')
-          echo "Latest trace file: $FILE_NAME"
-          
-          FULL_PATH="s3://otel-traces/$FILE_NAME"
-          echo "Latest full path: $FULL_PATH"
-          
-          aws --endpoint-url=http://localhost:4566 s3 cp "$FULL_PATH" - | jq | tee trace.json
-          if grep -q "test-span" trace.json; then
-            echo "✅ 'test-span' was found in the trace file!"
-          else
-            echo "❌ 'test-span' was NOT found in the trace file!"
-            exit 1 
-          fi
-          
-          
-      # aws --endpoint-url=http://localhost:4566 s3 cp "$FULL_PATH" - | jq
-
-      # - name: Verify "test-span" in Trace File
-      #   run: |
-      #     if grep -q "test-span" trace.json; then
-      #       echo "✅ 'test-span' found in trace file!"
-      #     else
-      #       echo "❌ 'test-span' NOT found in trace file!" 
-      #       exit 1
-      #     fi
-
-      
+      - name: Test API Gateway
+        run: |
+          curl --location --request GET "localhost:9080/get?foo1=bar1&foo2=bar2" -H "Host: local.httpbin.org"

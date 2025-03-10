@@ -1,0 +1,18 @@
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: httpbin-route
+  labels:
+    app: api-management
+spec:
+  http:
+    - name: rule1
+      match:
+        hosts:
+          - localhost
+          - local.httpbin.org
+        paths:
+          - /*
+      backends:
+        - serviceName: httpbin-service
+          servicePort: 80

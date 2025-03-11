@@ -36,6 +36,7 @@ jobs:
         run: |
           helm dependency update ./helm
           sleep 10
+          helm version
 
       - name: Deploy API Gateway (APISIX)
         run: |

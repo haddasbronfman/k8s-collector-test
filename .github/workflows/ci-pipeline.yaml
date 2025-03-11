@@ -27,6 +27,11 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+      - name: Add and Update Helm Repositories
+        run: |
+          helm repo add apisix https://charts.apiseven.com
+          helm repo update
+
       - name: Update Helm Dependencies
         run: |
           helm dependency update ./helm
@@ -34,7 +39,7 @@ jobs:
 
       - name: Deploy API Gateway (APISIX)
         run: |
-          helm upgrade --install apisix ./helm -n apisix --create-namespace --wait
+          helm upgrade --install apisix ./helm -n apisix --create-namespace
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -n apisix

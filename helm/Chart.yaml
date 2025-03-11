@@ -1,0 +1,7 @@
+apiVersion: v2
+name: apisix-gateway
+version: 1.0.0
+dependencies:
+  - name: apisix
+    version: "2.10.0"
+    repository: "https://charts.apiseven.com"

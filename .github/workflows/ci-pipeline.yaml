@@ -1,4 +1,4 @@
-name: CI Pipeline for Kubernetes + OpenTelemetry + LocalStack
+name: CI Pipeline for API Gateway
 
 on:
   pull_request:
@@ -9,22 +9,45 @@ on:
       - main 
 
 jobs:
-  test-deployment:
+  deploy-gateway:
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set Up Kubernetes with Kind
-        uses: helm/kind-action@v1.8.0
-        with:
-          cluster_name: "ci-cluster"
-
-      - name: Apply Kubernetes Deployment
         run: |
-          kubectl apply -f poc-deployment.yaml
-          sleep 10 
+          curl -Lo kind https://kind.sigs.k8s.io/dl/v0.27.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/
+          kind create cluster --name ci-cluster
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Add and Update Helm Repositories
+        run: |
+          helm repo add apisix https://charts.apiseven.com
+          helm repo update
+
+      - name: Update Helm Dependencies
+        run: |
+          helm dependency update ./helm
+          sleep 10
+          helm version
+
+      - name: Deploy API Gateway (APISIX)
+        run: |
+          helm install apisix ./helm -n apisix --create-namespace --set installCRDs=true
 
       - name: Verify Kubernetes Pods
-        run: kubectl get pods -n observability
+        run: kubectl get pods -n apisix
+
+      - name: Port-Forward API Gateway
+        run: kubectl port-forward -n apisix svc/apisix-gateway 9080:80 &
+
+      - name: Test API Gateway
+        run: |
+          curl --location --request GET "localhost:9080/get?foo1=bar1&foo2=bar2" -H "Host: local.httpbin.org"

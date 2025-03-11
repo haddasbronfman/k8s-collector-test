@@ -1,0 +1,10 @@
+apisix:
+  gateway:
+    type: NodePort
+
+  ingress-controller:
+    enabled: true
+    config:
+      apisix:
+        serviceNamespace: apisix
+        adminAPIVersion: v3
